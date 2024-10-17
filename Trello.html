@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake Trello</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="grid-container">
+        <div class="grid-item">
+            <p>Not started</p>
+            <button class="add_item">+</button>
+        </div>
+        <div class="grid-item">
+            <p>In progress</p>
+            <button class="add_item">+</button>
+        </div>
+        <div class="grid-item">
+            <p>Completed</p>
+            <button class="add_item">+</button>
+        </div>
+    </div>
+</body>
+<script>
+    const add_item = document.querySelectorAll('.add_item');
+    add_item.forEach(item => {
+        item.addEventListener('click', () => {
+            const newCard = document.createElement('div');
+            newCard.innerHTML = "New Card " + document.querySelectorAll('.card').length;
+            newCard.className = 'card';
+            newCard.draggable = true;
+            newCard.addEventListener('click', () => {
+                newCard.contentEditable = true;
+                newCard.focus();
+                newCard.addEventListener('blur', () => {
+                    newCard.contentEditable = false;
+                });
+            });
+
+            newCard.addEventListener('dragstart', () => {
+                newCard.classList.add('dragging');
+            });
+            newCard.addEventListener('dragend', () => {
+                newCard.classList.remove('dragging');
+            });
+
+            item.parentElement.appendChild(newCard);
+        });
+    });
+
+    const gridItems = document.querySelectorAll('.grid-item');
+    gridItems.forEach(gridItem => {
+        gridItem.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+        gridItem.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const dragging = document.querySelector('.dragging');
+            if (dragging) {
+                dragging.classList.remove('dragging');
+                gridItem.appendChild(dragging);
+            }
+        });
+    });
+</script>
+
+</html>

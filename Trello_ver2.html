@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake Trello Version 2</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .card {
+            user-select: none;
+            -webkit-user-drag: none;
+            -moz-user-drag: none;
+            -ms-user-drag: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="grid-container">
+        <div class="grid-item">
+            <p>Not started</p>
+            <button class="add_item">+</button>
+        </div>
+        <div class="grid-item">
+            <p>In progress</p>
+            <button class="add_item">+</button>
+        </div>
+        <div class="grid-item">
+            <p>Completed</p>
+            <button class="add_item">+</button>
+        </div>
+    </div>
+</body>
+<script>
+    const add_item = document.querySelectorAll('.add_item');
+    add_item.forEach(item => {
+        item.addEventListener('click', () => {
+            const newCard = document.createElement('div');
+            newCard.innerHTML = "New Card " + document.querySelectorAll('.card').length;
+            newCard.className = 'card';
+            newCard.draggable = false;
+            newCard.addEventListener('click', () => {
+                newCard.contentEditable = true;
+                newCard.focus();
+                newCard.addEventListener('blur', () => {
+                    newCard.contentEditable = false;
+                });
+            });
+
+            const onMouseDown = (e) => {
+                const card = e.target;
+                const originalParent = card.parentElement;
+                card.classList.add('dragging');
+                document.body.appendChild(card);
+                card.style.position = 'absolute';
+                card.style.zIndex = 1000;
+
+                const moveAt = (pageX, pageY) => {
+                    card.style.left = pageX - card.offsetWidth / 2 + 'px';
+                    card.style.top = pageY - card.offsetHeight / 2 + 'px';
+                };
+
+                moveAt(e.pageX, e.pageY);
+
+                const onMouseMove = (e) => {
+                    moveAt(e.pageX, e.pageY);
+                };
+
+                document.addEventListener('mousemove', onMouseMove);
+
+                card.onmouseup = (e) => {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    card.onmouseup = null;
+
+                    let droppedInGridItem = false;
+                    const gridItems = document.querySelectorAll('.grid-item');
+                    gridItems.forEach(gridItem => {
+                        const rect = gridItem.getBoundingClientRect();
+                        if (e.clientX > rect.left && e.clientX < rect.right && e.clientY > rect.top && e.clientY < rect.bottom) {
+                            card.remove();
+                            const newCard = document.createElement('div');
+                            newCard.innerHTML = card.innerHTML;
+                            newCard.className = 'card';
+                            newCard.draggable = false;
+                            newCard.addEventListener('click', () => {
+                                newCard.contentEditable = true;
+                                newCard.focus();
+                                newCard.addEventListener('blur', () => {
+                                    newCard.contentEditable = false;
+                                });
+                            });
+                            newCard.addEventListener('mousedown', onMouseDown);
+                            gridItem.appendChild(newCard);
+                            droppedInGridItem = true;
+                        }
+                    });
+
+                    if (!droppedInGridItem) {
+                        card.remove();
+                        originalParent.appendChild(card);
+                        card.style.position = '';
+                        card.style.zIndex = '';
+                        card.style.left = '';
+                        card.style.top = '';
+                    }
+                };
+            };
+
+            newCard.addEventListener('mousedown', onMouseDown);
+            item.parentElement.appendChild(newCard);
+        });
+    });
+</script>
+
+</html>
